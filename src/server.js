@@ -3,10 +3,14 @@ import dotenv from 'dotenv'
 import passport from 'passport'
 import session from 'express-session';
 import Auth from './contollers/auth.js'
+import { connectDB } from './config/db.js'
 
-const PORT = 3002
 dotenv.config()
+
 const app = express();
+const PORT = 3002
+
+connectDB()
 
 app.use(express.json())
 
@@ -26,7 +30,7 @@ app.get('/', (_, res) => {
 
 app.get('/auth/shopify', (req, res, next) => {
     passport.authenticate('shopify', {
-        scope: ['read_products'],
+        scope: ['read_orders', 'read_products', 'read_refunds'],
         shop: req.query.shop,
     })(req, res, next);
 });
@@ -34,12 +38,13 @@ app.get('/auth/shopify', (req, res, next) => {
 app.get(
     '/auth/shopify/callback',
     passport.authenticate('shopify', { failureRedirect: '/login' }),
-    function (req, res) {
+    function (_, res) {
         // Successful authentication, redirect home.
         res.redirect('/')
-    }
-)
+    })
 
 app.listen(PORT, () => {
     console.log(`Server is running on PORT:${PORT}`);
 });
+
+export default app;
