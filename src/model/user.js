@@ -2,7 +2,6 @@ import mongoose from 'mongoose'
 
 const StoreSchema = new mongoose.Schema(
     {
-
         shop: {
             type: String,
             required: true,
@@ -12,12 +11,7 @@ const StoreSchema = new mongoose.Schema(
         accessToken: {
             type: String,
             required: true,
-        },
-
-        refreshToken: {
-            type: String,
-        },
-
+        }
     }, { timestamps: true }
 )
 
