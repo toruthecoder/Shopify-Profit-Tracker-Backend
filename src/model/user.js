@@ -11,6 +11,11 @@ const StoreSchema = new mongoose.Schema(
         accessToken: {
             type: String,
             required: true,
+        },
+
+        initialSyncDone: {
+            type: Boolean,
+            default: false,
         }
     }, { timestamps: true }
 )

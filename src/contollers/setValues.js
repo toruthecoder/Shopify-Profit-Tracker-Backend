@@ -20,7 +20,7 @@ export const getOrders = async (req, res) => {
             shop: shopDomain,
             orderId: payload.id,
             email: payload.email,
-            totalPrice: payload.total_price,
+            totalPrice: payload.total_price,    
             currency: payload.currency,
             rawData: payload
         })

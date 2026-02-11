@@ -1,4 +1,5 @@
 import Store from '../model/user.js'
+import { syncOrders, syncProducts } from '../contollers/getValues.js'
 
 // This is the offline access token for background operations
 export const getAccess = async (_, res) => {
@@ -12,7 +13,21 @@ export const getAccess = async (_, res) => {
             { upsert: true, new: true }
         );
 
-        res.json({ success: true, store });
+        const shop = store.shop
+        const accessToken = store.accessToken
+
+        if (!store.initialSyncDone) {
+            console.log('starting initial sync')
+            await syncOrders(shop, accessToken)
+            await syncProducts(shop, accessToken)
+
+            store.initialSyncDone = true;
+            await store.save()
+
+            console.log('Initial Sync Done.')
+        }
+
+        res.json({ success: true, shop: store.shop, accessToken: store.accessToken, initialSyncDone: store.initialSyncDone });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
