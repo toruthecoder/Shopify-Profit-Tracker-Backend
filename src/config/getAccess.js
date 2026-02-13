@@ -27,7 +27,7 @@ export const getAccess = async (_, res) => {
             console.log('Initial Sync Done.')
         }
 
-        res.json({ success: true, shop: store.shop, accessToken: store.accessToken, initialSyncDone: store.initialSyncDone });
+        res.json({ success: true, shop: store.shop, accessToken: store.accessToken, initialSyncDone: store.initialSyncDone, message: `User Logged In Successfully.` });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
