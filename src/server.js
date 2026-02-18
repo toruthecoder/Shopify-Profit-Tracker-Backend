@@ -4,6 +4,7 @@ import { connectDB } from './config/db.js'
 import storeRoute from './routes/storeRoute.js'
 import setRoute from './routes/setRoute.js'
 import fetchstoreData from './routes/fetchstoreData.js'
+import getValuesRoute from './routes/getValuesRoute.js'
 import cors from 'cors'
 
 dotenv.config()
@@ -19,6 +20,7 @@ app.use(cors({
 }))
 app.use('/setup-store', storeRoute)
 app.use('/store/data', fetchstoreData)
+app.use('/store', getValuesRoute);
 app.use('/store', express.raw({ type: 'application/json' }), setRoute)
 app.use(express.json())
 
