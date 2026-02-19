@@ -56,14 +56,10 @@ export const syncOrders = async (shop, accessToken) => {
             url = null
         }
     }
-    console.log("SHOP VALUE:", shop)
-    console.log("FULL URL:", url)
     console.log(`orders + refunds synced for ${shop}`)
 }
 
 export const syncProducts = async (shop, accessToken) => {
-    console.log("SHOP VALUE:", shop)
-    console.log("TOKEN EXISTS:", !!accessToken)
     let url = `https://${shop}/admin/api/2024-10/products.json?limit=250`
     while (url) {
         const { data, headers } = await axios.get(url, {

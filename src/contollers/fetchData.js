@@ -1,6 +1,7 @@
 import Product from '../model/prodcut.js'
 import Order from '../model/order.js'
 import Return from '../model/returns.js'
+import MontlyCosts from '../model/form.js'
 
 export const fetchData = async (req, res) => {
     try {
@@ -8,6 +9,7 @@ export const fetchData = async (req, res) => {
         const orders = await Order.find({ shop })
         const returns = await Return.find({ shop })
         const products = await Product.find({})
+        const form = await MontlyCosts.findOne()
 
         // sales result
         const salesResult = orders.reduce((sum, order) => {
@@ -55,10 +57,17 @@ export const fetchData = async (req, res) => {
         }, 0)
 
         // total costs results
-        const totalCosts = salesResult + totalShipping + totalRefundCosts;
+        const totalCosts = salesResult + totalShipping + totalRefundCosts + form?.paymentFees + form?.transactionFees;
 
-        // total expenses result
-        const totalExpenses = totalCosts + totalDiscounts;
+        const packagingCosts = (form?.packagingCosts) * orders.length;
+        const deliveryCosts = (form?.deliveryCosts) * orders.length;
+
+        // Fixed monthly costs
+        const fixedCosts =
+            (form?.paymentFees) + (form?.appCosts) + (form?.shopifyCosts) + (form?.marketingCosts);
+
+        // Total Expenses (Correct)
+        const totalExpenses = totalShipping + totalRefundCosts + totalDiscounts + packagingCosts + deliveryCosts + fixedCosts;
 
         // total netprofit
         const netProfit = totalRevenue - totalExpenses
@@ -81,9 +90,10 @@ export const fetchData = async (req, res) => {
                 order?.rawData?.total_shipping_price_set?.shop_money?.amount
             )
 
-            const revenue = cost - discount - refund
-            const expense = shipping
-            const netProfit = revenue - expense
+            const revenue = cost - discount - refund;
+            const expense = shipping + fixedCosts;
+            const netProfit = expense - revenue;
+            const Date = order?.rawData?.updated_at
 
             return {
                 orderId: order._id,
@@ -91,11 +101,11 @@ export const fetchData = async (req, res) => {
                 discount: Math.round(discount),
                 refund: Math.round(refund),
                 revenue: Math.round(revenue),
-                Shipping: Math.round(expense),
-                netProfit: Math.round(netProfit)
+                Shipping: Math.round(shipping),
+                netProfit: Math.round(netProfit),
+                Date: Date
             }
         })
-
 
         res.json({
             success: true,
