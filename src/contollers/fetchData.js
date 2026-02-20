@@ -107,6 +107,38 @@ export const fetchData = async (req, res) => {
             }
         })
 
+        const groupedByDate = {};
+
+        orders.forEach(order => {
+            const cost = Number(order?.totalPrice || 0);
+            const discount = Number(order?.rawData?.total_discounts || 0);
+            const refund = Number(
+                order?.rawData?.total_cash_rounding_refund_adjustment_set?.presentment_money?.amount || 0
+            );
+
+            const revenue = cost - discount - refund;
+
+            const rawDate = order?.rawData?.updated_at;
+            const dateObj = new Date(rawDate);
+            const formattedDate = dateObj.toISOString().split("T")[0];
+
+            if (!groupedByDate[formattedDate]) {
+                groupedByDate[formattedDate] = {
+                    date: formattedDate,
+                    totalPrice: 0,
+                    revenue: 0,
+                };
+            }
+
+            groupedByDate[formattedDate].totalPrice += cost;
+            groupedByDate[formattedDate].revenue += revenue;
+        });
+
+        const chartData = Object.values(groupedByDate).sort(
+            (a, b) => new Date(a.date) - new Date(b.date)
+        );
+
+
         res.json({
             success: true,
             stats: {
@@ -123,10 +155,8 @@ export const fetchData = async (req, res) => {
                 profitMargin,
 
             },
-            orders,
-            returns,
-            products,
-            singleNetProfit,
+            chartData,
+            singleNetProfit
         })
 
     } catch (error) {
