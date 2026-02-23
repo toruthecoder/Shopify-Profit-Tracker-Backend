@@ -70,8 +70,9 @@ export const syncProducts = async (shop, accessToken) => {
 
         for (const payload of data.products) {
             await Product.updateOne(
-                { _id: payload.id },
+                { _id: payload.id, shop },
                 {
+                    shop,
                     admin_graphql_api_id: payload.admin_graphql_api_id,
                     title: payload.title,
                     handle: payload.handle,
@@ -92,7 +93,8 @@ export const syncProducts = async (shop, accessToken) => {
                         taxable: v.taxable,
                         updated_at: v.updated_at
                     })),
-                    updated_at: payload.updated_at
+                    updated_at: payload.updated_at,
+                    rawData: payload
                 },
                 { upsert: true }
             )

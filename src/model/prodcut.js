@@ -1,10 +1,11 @@
 import mongoose from 'mongoose'
 
 const ProductSchema = new mongoose.Schema({
-    _id: { type: Number, required: true },
+    _id: { type: String, required: true },
+    shop: { type: String },
     admin_graphql_api_id: String,
     title: { type: String, required: true },
-    handle: { type: String, unique: true },
+    handle: { type: String },
     body_html: String,
     vendor: String,
     product_type: String,
@@ -29,7 +30,9 @@ const ProductSchema = new mongoose.Schema({
         updated_at: Date
     }],
 
-    updated_at: { type: Date, default: Date.now }
+    updated_at: { type: Date, default: Date.now },
+    rawData: Object,
 }, { _id: false });
+ProductSchema.index({ shop: 1, handle: 1 }, { unique: true });
 const Product = mongoose.model('Product', ProductSchema)
 export default Product

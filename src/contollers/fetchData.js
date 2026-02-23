@@ -75,38 +75,6 @@ export const fetchData = async (req, res) => {
         // total profitMargin
         const profitMargin = (netProfit / totalRevenue) * 100;
 
-
-        // singleCost, singleDiscount, singleRefund, singleShipping
-        const singleNetProfit = orders.map(order => {
-            const cost = Number(order?.totalPrice)
-
-            const discount = Number(order?.rawData?.total_discounts)
-
-            const refund = Number(
-                order?.rawData?.total_cash_rounding_refund_adjustment_set?.presentment_money?.amount
-            )
-
-            const shipping = Number(
-                order?.rawData?.total_shipping_price_set?.shop_money?.amount
-            )
-
-            const revenue = cost - discount - refund;
-            const expense = shipping + fixedCosts;
-            const netProfit = expense - revenue;
-            const Date = order?.rawData?.updated_at
-
-            return {
-                orderId: order._id,
-                totalPrice: Math.round(cost),
-                discount: Math.round(discount),
-                refund: Math.round(refund),
-                revenue: Math.round(revenue),
-                Shipping: Math.round(shipping),
-                netProfit: Math.round(netProfit),
-                Date: Date
-            }
-        })
-
         const groupedByDate = {};
 
         orders.forEach(order => {
@@ -155,8 +123,7 @@ export const fetchData = async (req, res) => {
                 profitMargin,
 
             },
-            chartData,
-            singleNetProfit
+            chartData
         })
 
     } catch (error) {
