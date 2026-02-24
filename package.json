@@ -5,6 +5,7 @@
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
+    "fast-csv": "^5.0.5",
     "mongoose": "^9.1.5",
     "passport": "^0.7.0",
     "passport-shopify": "^0.1.2"

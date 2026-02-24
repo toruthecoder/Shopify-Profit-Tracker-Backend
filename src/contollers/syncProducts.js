@@ -19,7 +19,50 @@ export const handleSyncOrders = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
         const search = req.query.search || ''
+        const sort = req.query.sort || ''
+        let recent = {}
         const filter = { shop: store.shop }
+
+        switch (sort) {
+            case '1':
+                const start = new Date()
+                const end = new Date()
+
+                start.setHours(0, 0, 0, 0)
+                end.setHours(23, 59, 59, 999)
+                filter.$expr = {
+                    $and: [
+                        { $gte: [{ $toDate: "$rawData.created_at" }, start] },
+                        { $lte: [{ $toDate: "$rawData.created_at" }, end] }
+                    ]
+                }
+                break;
+
+            case '2':
+                const last7Days = new Date()
+                last7Days.setDate(last7Days.getDate() - 7)
+                filter.$expr = {
+                    $gte: [
+                        { $toDate: '$rawData.created_at' },
+                        last7Days
+                    ]
+                }
+                break;
+
+            case '3':
+                const last30Days = new Date()
+                last30Days.setDate(last30Days.getDate() - 30)
+                filter.$expr = {
+                    $gte: [
+                        { $toDate: '$rawData.created_at' },
+                        last30Days
+                    ]
+                }
+                break;
+
+            default:
+                break;
+        }
 
         if (search) {
             filter.$or = [
@@ -28,10 +71,12 @@ export const handleSyncOrders = async (req, res) => {
             ]
         }
 
+
+
         const totalOrders = await Order.countDocuments(filter)
         const totalPages = Math.ceil(totalOrders / limit)
 
-        const order = await Order.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit)
+        const order = await Order.find(filter).sort(recent).skip(skip).limit(limit)
 
         // singleCost, singleDiscount, singleRefund, singleShipping
         const singleNetProfit = order.map(order => {
@@ -98,7 +143,51 @@ export const handleSyncProducts = async (req, res) => {
         const limit = parseInt(req.query.limit) || 8;
         const skip = (page - 1) * limit;
         const search = req.query.search || ''
+        const sort = req.query.sort || ''
+        let recent = {}
         const filter = { shop: store.shop }
+
+        switch (sort) {
+            case '1':
+                const start = new Date()
+                const end = new Date()
+
+                start.setHours(0, 0, 0, 0)
+                end.setHours(23, 59, 59, 999)
+
+                filter.$expr = {
+                    $and: [
+                        { $gte: [{ $toDate: "$rawData.created_at" }, start] },
+                        { $lte: [{ $toDate: "$rawData.created_at" }, end] }
+                    ]
+                }
+                break;
+
+            case '2':
+                const last7Days = new Date()
+                last7Days.setDate(last7Days.getDate() - 7)
+                filter.$expr = {
+                    $gte: [
+                        { $toDate: "$rawData.created_at" },
+                        last7Days
+                    ]
+                }
+                break;
+
+            case '3':
+                const last30Days = new Date()
+                last30Days.setDate(last30Days.getDate() - 30)
+                filter.$expr = {
+                    $gte: [
+                        { $toDate: "$rawData.created_at" },
+                        last30Days
+                    ]
+                }
+                break
+
+            default:
+                break;
+        }
 
         if (search) {
             filter.$or = [
@@ -113,7 +202,7 @@ export const handleSyncProducts = async (req, res) => {
         const totalProducts = await Product.countDocuments(filter)
         const totalPages = Math.ceil(totalProducts / limit)
 
-        const product = await Product.find(filter).skip(skip).limit(limit)
+        const product = await Product.find(filter).sort(recent).skip(skip).limit(limit)
         const formattedProducts = product.map((product) => {
             return {
                 id: product._id,
