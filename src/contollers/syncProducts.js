@@ -13,8 +13,6 @@ export const handleSyncOrders = async (req, res) => {
             return res.status(404).json({ message: "Store not found" })
         }
 
-        await syncOrders(store.shop, store.accessToken)
-
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
@@ -136,8 +134,6 @@ export const handleSyncProducts = async (req, res) => {
         if (!store) {
             return res.status(404).json({ message: "Store not found" })
         }
-
-        await syncProducts(store.shop, store.accessToken)
 
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 8;
