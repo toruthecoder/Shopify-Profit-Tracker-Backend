@@ -57,10 +57,12 @@ export const handleMonthlyCsv = async (req, res) => {
             const packagingCosts = (form?.packagingCosts || 0) * ordersCount;
             const deliveryCosts = (form?.deliveryCosts || 0) * ordersCount;
             const fixedCosts = (form?.paymentFees || 0) + (form?.appCosts || 0) + (form?.shopifyCosts || 0) + (form?.marketingCosts || 0);
+            const totalRevenue = stat.salesResult - stat.totalDiscounts - stat.totalRefundCosts
 
-            stat.totalProducts = products.length; // can be refined to products sold in month
+            stat.totalProducts = products.length;
+            stat.totalReturns = returns.length;
             stat.totalExpenses = stat.totalShipping + stat.totalRefundCosts + stat.totalDiscounts + packagingCosts + deliveryCosts + fixedCosts;
-            stat.netProfit = stat.salesResult - stat.totalExpenses;
+            stat.netProfit = totalRevenue - stat.totalExpenses;
             stat.profitMargin = stat.salesResult ? (stat.netProfit / stat.salesResult) * 100 : 0;
         });
 

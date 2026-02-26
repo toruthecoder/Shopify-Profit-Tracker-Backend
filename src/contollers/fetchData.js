@@ -66,7 +66,7 @@ export const fetchData = async (req, res) => {
         const fixedCosts =
             (form?.paymentFees) + (form?.appCosts) + (form?.shopifyCosts) + (form?.marketingCosts);
 
-        // Total Expenses (Correct)
+        // Total Expenses
         const totalExpenses = totalShipping + totalRefundCosts + totalDiscounts + packagingCosts + deliveryCosts + fixedCosts;
 
         // total netprofit
