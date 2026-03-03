@@ -26,6 +26,7 @@ export const syncOrders = async (shop, accessToken) => {
             )
 
             for (const refund of order.returns || []) {
+                const transactionAmount = refund.transactions?.[0]?.amount || '0';
                 await Returns.updateOne(
                     { shop, refundId: refund.id },
                     {
@@ -33,8 +34,8 @@ export const syncOrders = async (shop, accessToken) => {
                         refundId: refund.id,
                         orderId: order.id,
                         currency: order.currency,
-                        totalRefunded: refund.transactions?.[0]?.amount,
-                        transactions: refund.transactions,
+                        totalRefunded: transactionAmount,
+                        transactions: refund.transactions || [],
                         refundLineItems: refund.refund_line_items.map(item => ({
                             lineItemId: item.line_item_id,
                             quantity: item.quantity,

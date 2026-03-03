@@ -6,21 +6,25 @@ import setRoute from './routes/setRoute.js'
 import fetchstoreData from './routes/fetchstoreData.js'
 import getValuesRoute from './routes/getValuesRoute.js'
 import formRoute from './routes/formRoute.js'
+import checkout from './routes/checkout.js'
 import cors from 'cors'
 
 dotenv.config()
 
 const app = express()
-app.use('/store', express.raw({ type: 'application/json' }), setRoute)
-app.use(express.json())
 const PORT = 3002
-
 connectDB()
 
 app.use(cors({
     origin: [process.env.FRONTEND_URL, 'http://localhost:5173'],
     method: ['GET', 'POST', 'PUT', 'DELETE'],
 }))
+
+app.use('/stripe', checkout)
+app.use('/store', express.raw({ type: 'application/json' }), setRoute)
+app.use(express.json())
+
+
 app.use('/setup-store', storeRoute);
 app.use('/store/data', fetchstoreData);
 app.use('/store', getValuesRoute);

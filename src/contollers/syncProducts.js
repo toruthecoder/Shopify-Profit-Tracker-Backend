@@ -77,19 +77,15 @@ export const handleSyncOrders = async (req, res) => {
         const singleNetProfit = await Promise.all(
             order.map(async (order) => {
 
-                const cost = Number(order?.totalPrice)
+                const cost = Number(order?.totalPrice) || 0
 
-                const discount = Number(order?.rawData?.total_discounts)
+                const discount = Number(order?.rawData?.total_discounts) || 0
 
-                const refund = Number(
-                    order?.rawData?.total_cash_rounding_refund_adjustment_set?.presentment_money?.amount
-                )
+                const refund = Number(order?.rawData?.total_cash_rounding_refund_adjustment_set?.presentment_money?.amount) || 0
 
-                const shipping = Number(
-                    order?.rawData?.total_shipping_price_set?.shop_money?.amount
-                )
+                const shipping = Number(order?.rawData?.total_shipping_price_set?.shop_money?.amount) || 0
 
-                const fixedCosts = (form?.paymentFees) + (form?.appCosts) + (form?.shopifyCosts) + (form?.marketingCosts);
+                const fixedCosts = (form?.paymentFees || 0) + (form?.appCosts || 0) + (form?.shopifyCosts || 0) + (form?.marketingCosts || 0);
                 const name = order?.rawData?.name;
                 const currency = order?.currency
                 const email = order?.email
@@ -108,10 +104,10 @@ export const handleSyncOrders = async (req, res) => {
 
                         if (!item.variant_id) {
                             return {
-                                title: item.title,
-                                quantity: item.quantity,
-                                price: Number(item.price),
-                                sku: item.sku
+                                title: item.title || 'unknown',
+                                quantity: item.quantity || 0,
+                                price: Number(item.price) || 0,
+                                sku: item.sku || ''
                             }
                         }
 
@@ -121,16 +117,16 @@ export const handleSyncOrders = async (req, res) => {
                         })
 
                         const variant = product?.variants.find(
-                            v => v.id === item.variant_id
+                            v => v?.id === item?.variant_id
                         )
 
                         return {
-                            productId: item.product_id,
-                            variantId: item.variant_id,
-                            title: item.title,
-                            quantity: item.quantity,
-                            price: Number(item.price),
-                            sku: item.sku,
+                            productId: item?.product_id,
+                            variantId: item?.variant_id,
+                            title: item?.title || 'unknown',
+                            quantity: item?.quantity || 0,
+                            price: Number(item?.price) || 0,
+                            sku: item?.sku || '',
 
                             productTitle: product?.title,
                             html: product?.rawData?.body_html,
@@ -144,7 +140,7 @@ export const handleSyncOrders = async (req, res) => {
                 )
 
                 return {
-                    orderId: order._id,
+                    orderId: order?._id,
                     name: name,
                     currency: currency,
                     email: email,
@@ -243,17 +239,17 @@ export const handleSyncProducts = async (req, res) => {
         const product = await Product.find(filter).sort(recent).skip(skip).limit(limit)
         const formattedProducts = product.map((product) => {
             return {
-                id: product._id,
-                title: product.title,
-                vendor: product.vendor,
-                type: product.product_type,
+                id: product?._id,
+                title: product?.title || 'untitled',
+                vendor: product?.vendor || 'unknown',
+                type: product?.product_type || 'N/A',
                 html: product?.rawData?.body_html,
-                tags: product?.rawData?.tags,
-                variants: product.variants.map((variant) => {
+                tags: product?.rawData?.tags || [],
+                variants: (product?.variants || []).map((variant) => {
                     return {
-                        variantTitle: variant.title,
-                        variantPrice: variant.price,
-                        variantQuantity: variant.inventory_quantity,
+                        variantTitle: variant?.title || 'Default',
+                        variantPrice: variant?.price || 0,
+                        variantQuantity: variant?.inventory_quantity || 0,
                     };
                 }),
                 src: product?.rawData?.image?.src,
@@ -290,37 +286,37 @@ export const getSingleOrder = async (req, res) => {
             lineItems.map(async (item) => {
 
                 const product = await Product.findOne({
-                    shop: order.shop,
-                    "variants.id": item.variant_id
+                    shop: order?.shop,
+                    "variants.id": item?.variant_id
                 })
 
-                const variant = product?.variants.find(
-                    v => v.id === item.variant_id
+                const variant = product?.variants?.find(
+                    v => v?.id === item?.variant_id
                 )
 
                 return {
-                    title: item.title,
-                    quantity: item.quantity,
-                    price: Number(item.price),
-                    sku: item.sku,
+                    title: item?.title || 'unknown',
+                    quantity: item?.quantity || 0,
+                    price: Number(item?.price) || 0,
+                    sku: item?.sku || '',
                     image: product?.rawData?.image?.src,
                     variantTitle: variant?.title
                 }
             })
         )
 
-        const cost = Number(order?.totalPrice)
-        const discount = Number(order?.rawData?.total_discounts)
-        const refund = Number(order?.rawData?.total_cash_rounding_refund_adjustment_set?.presentment_money?.amount)
-        const shipping = Number(order?.rawData?.total_shipping_price_set?.shop_money?.amount)
+        const cost = Number(order?.totalPrice) || 0
+        const discount = Number(order?.rawData?.total_discounts) || 0
+        const refund = Number(order?.rawData?.total_cash_rounding_refund_adjustment_set?.presentment_money?.amount) || 0
+        const shipping = Number(order?.rawData?.total_shipping_price_set?.shop_money?.amount) || 0
 
-        const fixedCosts = (form?.paymentFees) + (form?.appCosts) + (form?.shopifyCosts) + (form?.marketingCosts);
+        const fixedCosts = (form?.paymentFees || 0) + (form?.appCosts || 0) + (form?.shopifyCosts || 0) + (form?.marketingCosts || 0);
         const revenue = cost - discount - refund;
         const expense = shipping + fixedCosts;
         const netProfit = expense - revenue;
 
         res.json({
-            orderId: order._id,
+            orderId: order?._id,
             name: order?.rawData?.name,
             email: order?.email,
             totalPrice: Math.round(cost),
@@ -330,7 +326,6 @@ export const getSingleOrder = async (req, res) => {
             Shipping: Math.round(shipping),
             netProfit: Math.round(netProfit),
             currency: order?.currency,
-
             items
         })
 

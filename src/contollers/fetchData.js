@@ -13,23 +13,23 @@ export const fetchData = async (req, res) => {
 
         // sales result
         const salesResult = orders.reduce((sum, order) => {
-            return sum + parseFloat(order.totalPrice || 0)
+            return sum + parseFloat(order?.totalPrice || 0)
         }, 0)
 
         // cutomer result
         const uniqeCustomer = new Set(
-            orders.map(order => order?.email).filter(id => id)
+            orders.map(order => order?.email).filter(email => email != null)
         )
         const totalCustomer = uniqeCustomer.size
 
         // discount result 
         const totalDiscounts = orders.reduce((sum, order) => {
-            return sum + parseFloat(order?.rawData?.total_discounts || 0)
+            return sum + (parseFloat(order?.rawData?.total_discounts) || 0)
         }, 0)
 
         // refunds results
         const totalRefundCosts = returns.reduce((sum, refund) => {
-            return sum + parseFloat(refund?.totalRefunded)
+            return sum + (parseFloat(refund?.totalRefunded) || 0)
         }, 0)
 
         // revenue results
@@ -53,18 +53,18 @@ export const fetchData = async (req, res) => {
 
         // Shipping results
         const totalShipping = orders.reduce((sum, order) => {
-            return sum + parseFloat(order?.rawData?.total_shipping_price_set?.shop_money?.amount)
+            return sum + (parseFloat(order?.rawData?.total_shipping_price_set?.shop_money?.amount) || 0)
         }, 0)
 
         // total costs results
         const totalCosts = salesResult + totalShipping + totalRefundCosts + form?.paymentFees + form?.transactionFees;
 
-        const packagingCosts = (form?.packagingCosts) * orders.length;
-        const deliveryCosts = (form?.deliveryCosts) * orders.length;
+        const packagingCosts = (form?.packagingCosts || 0) * orders.length;
+        const deliveryCosts = (form?.deliveryCosts || 0) * orders.length;
 
         // Fixed monthly costs
         const fixedCosts =
-            (form?.paymentFees) + (form?.appCosts) + (form?.shopifyCosts) + (form?.marketingCosts);
+            (form?.paymentFees || 0) + (form?.appCosts || 0) + (form?.shopifyCosts || 0) + (form?.marketingCosts || 0);
 
         // Total Expenses
         const totalExpenses = totalShipping + totalRefundCosts + totalDiscounts + packagingCosts + deliveryCosts + fixedCosts;
@@ -73,20 +73,20 @@ export const fetchData = async (req, res) => {
         const netProfit = totalRevenue - totalExpenses
 
         // total profitMargin
-        const profitMargin = (netProfit / totalRevenue) * 100;
+        const profitMargin = totalRevenue !== 0 ? (netProfit / totalRevenue) * 100 : 0;
 
         const groupedByDate = {};
 
         orders.forEach(order => {
-            const cost = Number(order?.totalPrice || 0);
-            const discount = Number(order?.rawData?.total_discounts || 0);
+            const cost = Number(order?.totalPrice) || 0;
+            const discount = Number(order?.rawData?.total_discounts) || 0;
             const refund = Number(
-                order?.rawData?.total_cash_rounding_refund_adjustment_set?.presentment_money?.amount || 0
-            );
+                order?.rawData?.total_cash_rounding_refund_adjustment_set?.presentment_money?.amount
+            ) || 0;
 
             const revenue = cost - discount - refund;
 
-            const rawDate = order?.rawData?.updated_at;
+            const rawDate = order?.rawData?.created_at || order?.createdAt || order?.rawData?.updated_at;
             const dateObj = new Date(rawDate);
             const formattedDate = dateObj.toISOString().split("T")[0];
 
