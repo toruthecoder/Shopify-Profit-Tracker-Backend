@@ -1,35 +1,28 @@
 import mongoose from 'mongoose'
 
-const userSchema = new mongoose.Schema({
+const stripeUserSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
-    shop: { type: String, default: '' },
-    plan: { type: String, default: 'trial' }, // 'trial' | 'starter' | 'pro' | 'expired'
-    trialStartDate: { type: Date, default: Date.now },
-    trialDays: { type: Number, default: 7 },
-    stripeCustomerId: { type: String },
-    stripeSubscriptionId: { type: String },
-    subscriptionStatus: { type: String },
-}, { timestamps: true })
-
-userSchema.virtual('isTrialActive').get(function () {
-    if (this.plan !== 'trial') return false
-    const now = new Date()
-    const trialEnd = new Date(this.trialStartDate)
-    trialEnd.setDate(trialEnd.getDate() + this.trialDays)
-    return now < trialEnd
+    plan: { type: String, default: 'none' },
+    stripeCustomerId: String,
+    stripeSubscriptionId: String,
+    subscriptionStatus: String,
+    trialStartDate: Date,
+    trialEndDate: Date,
+    createdAt: { type: Date, default: Date.now },
 })
 
-userSchema.virtual('trialDaysRemaining').get(function () {
-    if (this.plan !== 'trial') return 0
+stripeUserSchema.virtual('isTrialActive').get(function () {
+    if (!this.trialEndDate) return false
     const now = new Date()
-    const trialEnd = new Date(this.trialStartDate)
-    trialEnd.setDate(trialEnd.getDate() + this.trialDays)
-    const diff = trialEnd - now
-    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
+    return now <= this.trialEndDate
 })
 
-userSchema.set('toJSON', { virtuals: true })
-userSchema.set('toObject', { virtuals: true })
+stripeUserSchema.virtual('trialDaysRemaining').get(function () {
+    if (!this.trialEndDate) return 0
+    const now = new Date()
+    const diff = this.trialEndDate - now
+    return diff > 0 ? Math.ceil(diff / (1000 * 60 * 60 * 24)) : 0
+})
 
-const User = mongoose.model('StripeUser', userSchema)
+const User = mongoose.model('User', stripeUserSchema)
 export default User

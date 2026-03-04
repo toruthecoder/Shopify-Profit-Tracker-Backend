@@ -4,13 +4,14 @@ import {
     stripeWebhook,
     startFreeTrial,
     getPlanStatus,
+    cancelSubscription,
 } from '../contollers/subscription.js'
 
 const router = express.Router()
 
 router.post('/webhook', express.raw({ type: 'application/json' }), stripeWebhook)
-
 router.post('/checkout', express.json(), createCheckoutSession)
+router.post('/cancel-subscription', express.json(), cancelSubscription)
 router.post('/free-trial', express.json(), startFreeTrial)
 router.get('/plan-status', getPlanStatus)
 
