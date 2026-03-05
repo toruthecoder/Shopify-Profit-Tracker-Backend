@@ -7,6 +7,7 @@ import fetchstoreData from './routes/fetchstoreData.js'
 import getValuesRoute from './routes/getValuesRoute.js'
 import formRoute from './routes/formRoute.js'
 import checkout from './routes/checkout.js'
+import productRoute from "./routes/productRoute.js";
 import cors from 'cors'
 
 dotenv.config()
@@ -29,6 +30,7 @@ app.use('/setup-store', storeRoute);
 app.use('/store/data', fetchstoreData);
 app.use('/store', getValuesRoute);
 app.use('/form', formRoute);
+app.use("/api/products", productRoute);
 
 app.get('/', (_, res) => { res.send('Hello World I am in. from Express! 🔥') })
 
